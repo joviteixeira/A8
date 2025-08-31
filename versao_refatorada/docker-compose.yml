@@ -1,0 +1,70 @@
+version: "3.8"
+services:
+  user:
+    build: ./services/user
+    container_name: ms2_user
+    environment:
+      BULKHEAD_LIMIT: 10
+    ports:
+      - "5101:5000"
+  inventory:
+    build: ./services/inventory
+    container_name: ms2_inventory
+    environment:
+      BULKHEAD_LIMIT: 5
+    ports:
+      - "5102:5000"
+  payment:
+    build: ./services/payment
+    container_name: ms2_payment
+    environment:
+      BULKHEAD_LIMIT: 5
+    ports:
+      - "5103:5000"
+  shipping:
+    build: ./services/shipping
+    container_name: ms2_shipping
+    environment:
+      BULKHEAD_LIMIT: 3
+    ports:
+      - "5104:5000"
+  order:
+    build: ./services/order
+    container_name: ms2_order
+    environment:
+      USER_URL: "http://user:5000"
+      INVENTORY_URL: "http://inventory:5000"
+      PAYMENT_URL: "http://payment:5000"
+      SHIPPING_URL: "http://shipping:5000"
+      HTTP_TIMEOUT: "2.0"
+      CB_THRESHOLD: "3"
+      CB_COOLDOWN: "5"
+      BULKHEAD_LIMIT: 8
+    ports:
+      - "5105:5000"
+    depends_on:
+      - user
+      - inventory
+      - payment
+      - shipping
+  gateway:
+    build: ./gateway
+    container_name: ms2_gateway
+    environment:
+      USER_URL: "http://user:5000"
+      INVENTORY_URL: "http://inventory:5000"
+      PAYMENT_URL: "http://payment:5000"
+      SHIPPING_URL: "http://shipping:5000"
+      ORDER_URL: "http://order:5000"
+      HTTP_TIMEOUT: "2.0"
+      CB_THRESHOLD: "3"
+      CB_COOLDOWN: "5"
+      BULKHEAD_LIMIT: 20
+    ports:
+      - "8080:8080"
+    depends_on:
+      - order
+      - user
+      - inventory
+      - payment
+      - shipping

@@ -1,0 +1,38 @@
+version: "3.8"
+services:
+  user:
+    build: ./services/user
+    container_name: ms_user
+    ports:
+      - "5001:5000"
+  inventory:
+    build: ./services/inventory
+    container_name: ms_inventory
+    ports:
+      - "5002:5000"
+  payment:
+    build: ./services/payment
+    container_name: ms_payment
+    ports:
+      - "5003:5000"
+  shipping:
+    build: ./services/shipping
+    container_name: ms_shipping
+    ports:
+      - "5004:5000"
+  order:
+    build: ./services/order
+    container_name: ms_order
+    environment:
+      # NOTE: intentionally unused to keep hard-coded direct coupling (anti-pattern on purpose)
+      USER_URL: "http://user:5000"
+      INVENTORY_URL: "http://inventory:5000"
+      PAYMENT_URL: "http://payment:5000"
+      SHIPPING_URL: "http://shipping:5000"
+    ports:
+      - "5005:5000"
+    depends_on:
+      - user
+      - inventory
+      - payment
+      - shipping
